@@ -8,18 +8,24 @@
     "node": ">=16.0.0 <17.0.0"
   },
   "scripts": {
-    "start": "ts-node src/index.ts",
-    "start:dev": "ts-node-dev src/index.ts",
+    "migrate": "CROSSBELL_RPC_ADDRESS=http://127.0.0.1:8545  ts-node src/scripts/import.ts",
+    "migrate:mainnet": "ts-node src/scripts/import.ts",
+    "start:dev": "CROSSBELL_RPC_ADDRESS=http://127.0.0.1:8545 ts-node-dev src/index.ts",
+    "start:dev:mainnet": "ts-node-dev src/index.ts",
     "start:prod": "node dist/index.js",
     "build": "tsc",
     "watch": "tsc -w"
   },
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "@notionhq/client": "^2.2.1",
+    "crossbell.js": "^0.10.38",
     "discord.js": "^14.6.0",
     "dotenv": "^16.0.3",
-    "glob": "^8.0.3"
+    "ethers": "^5.7.2",
+    "glob": "^8.0.3",
+    "node-csv": "^0.1.2",
+    "pinyin": "^3.0.0-alpha.4"
   },
   "devDependencies": {
     "@types/glob": "^8.0.0",
