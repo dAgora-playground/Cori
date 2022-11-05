@@ -52,12 +52,9 @@ export async function useCrossbell(
     const priKey = process.env.adminPrivateKey;
     const admin = await new Wallet(priKey).getAddress();
     const contract = new Contract(priKey);
-
     await contract.connect();
-
     const handle = formatHandle(authorId, guildName);
-    //TODO: is valid handle
-    console.log(authorAvatar, handle);
+    //TODO: is valid handle?
     if (handle.length < 3) {
         throw new Error("handle length is wrong");
     }
