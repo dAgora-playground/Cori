@@ -42,5 +42,5 @@ sudo docker push <your name>/cori
 ## 加入我们
 https://discord.com/channels/995771542631890944/1019574929571721266
 
-## 捐赠我们
+## 捐赠dDAO
 https://gitcoin.co/grants/7272/ddao-community-small-sociological-experiment
