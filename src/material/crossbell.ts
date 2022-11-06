@@ -87,9 +87,10 @@ export async function useCrossbell(
         await contract.setOperator(characterId, admin);
     }
     const operator = (await contract.getOperator(characterId)).data;
-    if (operator !== admin) {
-        throw new Error("not authorized");
-    }
+    // TODO: Check if admin is the owner
+    // if (operator !== admin) {
+    //     throw new Error("not authorized");
+    // }
 
     const note = {
         sources: [
