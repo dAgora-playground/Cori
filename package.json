@@ -1,7 +1,7 @@
 {
   "name": "cori-dcjs",
   "version": "1.0.0",
-  "description": "",
+  "description": "[Cori](https://ddaocommunity.notion.site/Cori-4b631a6498c24f449ab5fbb865dbefca) 是一个 discord bot，属于协同写作产品 Agora 的一部分。",
   "main": "index.js",
   "engines": {
     "npm": ">=8.0.0 <9.0.0",
@@ -33,5 +33,14 @@
     "ts-node": "^10.9.1",
     "ts-node-dev": "^2.0.0",
     "typescript": "^4.8.4"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DDAO-community/Cori.git"
+  },
+  "author": "",
+  "bugs": {
+    "url": "https://github.com/DDAO-community/Cori/issues"
+  },
+  "homepage": "https://github.com/DDAO-community/Cori#readme"
 }
