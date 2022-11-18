@@ -23,6 +23,7 @@ csv.mapFile("./data/notion.csv", async function (err, data) {
         const tags = entry["Key Words"].split(",") as string[];
         const content = entry["素材碎片"] as string;
         const attachments = [];
+        const curator = entry["Curator"] as string;
         const discordUrl = entry["Discord URL"] as string;
         try {
             const { characterId, noteId } = await materialHandler.useCrossbell(
@@ -37,6 +38,7 @@ csv.mapFile("./data/notion.csv", async function (err, data) {
                 tags,
                 content,
                 attachments,
+                curator,
                 discordUrl
             );
             console.log(characterId, noteId);

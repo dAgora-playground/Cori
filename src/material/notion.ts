@@ -12,6 +12,7 @@ export async function useNotion(
     publishedTime: Date,
     keywords: string[],
     material: string,
+    curator: string,
     discordUrl: string
 ) {
     const databaseId = materialTable;
@@ -54,17 +55,43 @@ export async function useNotion(
         authorPage = authorPageList.results[0];
     }
 
+    //增加建议投喂人为curator
+    const curatorPageList = await notion.databases.query({
+        database_id: relationTable,
+        filter: {
+            property: "Discord ID",
+            rich_text: {
+                equals: curator,
+            },
+        },
+    });
+    var curatorPage;
+    if (curatorPageList.results.length == 0) {
+        curatorPage = await notion.pages.create({
+            parent: {
+                database_id: relationTable,
+            },
+            properties: {
+                "Discord ID": {
+                    title: [
+                        {
+                            text: {
+                                content: curator,
+                            },
+                        },
+                    ],
+                },
+            },
+        });
+    } else {
+        curatorPage = curatorPageList.results[0];
+    }
+
     const ret = await notion.pages.create({
         parent: {
             database_id: materialTable,
         },
         properties: {
-            "Discord ID": {
-                type: "select",
-                select: {
-                    name: author,
-                },
-            },
             Author: {
                 relation: [
                     {
@@ -72,11 +99,12 @@ export async function useNotion(
                     },
                 ],
             },
-            "添加人 ID": {
-                type: "select",
-                select: {
-                    name: author, // Author and adder has to be the same one now
-                },
+            Curator: {
+                relation: [
+                    {
+                        id: curatorPage.id,
+                    },
+                ],
             },
             "Guild ID": {
                 type: "select",

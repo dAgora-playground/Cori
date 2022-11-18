@@ -5,6 +5,7 @@ import { Message } from "discord.js";
 import { handlerConfig } from "../config";
 import { logger } from "ethers";
 import { useNotion } from "../material/notion";
+import { createUnzip } from "zlib";
 
 const mentionBot = (message: Message): Boolean => {
     // message.mentions.users is a collection, and message.mentions.users.first()
@@ -15,7 +16,7 @@ const mentionBot = (message: Message): Boolean => {
 };
 
 //把存储notion和上链功能包起来，方便调用.
-export async function storage(repliedMessage,message){
+export async function handle(repliedMessage,message){
     const stateMessage = await message.reply("收藏中...");
     const username = repliedMessage.author.username;
     const authorId = `${username}#${repliedMessage.author.discriminator}`;
@@ -34,31 +35,49 @@ export async function storage(repliedMessage,message){
         });
             
     const attachments = repliedMessage.attachments.map(
-                (attachment) => ({
-                    address: attachment.url,
-                    mime_type: attachment.contentType,
-                    size_in_bytes: attachment.size,
-                    width: attachment.width,
-                    height: attachment.height,
-                })
-             );
-                
-            const collectNote = message.content.split(" ").splice(1).join(" ");
-            const title =
-            collectNote.search(/,|，/) > 0 ||
-            collectNote.search(/\/|、/) < 0
+        (attachment) => ({
+            address: attachment.url,
+            mime_type: attachment.contentType,
+            size_in_bytes: attachment.size,
+            width: attachment.width,
+            height: attachment.height,
+        })
+    );
+
+    const collectNote = message.content.split(" ").splice(1).join(" ");
+    const title =
+        collectNote.search(/,|，/) > 0 ||
+        collectNote.search(/\/|、/) < 0
             ? collectNote.split(/,|，/)[0]
             : "";
-            const publishedAt = new Date(repliedMessage.createdTimestamp);
-            const tags =
-            collectNote.search(/,|，/) > 0 ||
-            collectNote.search(/\/|、/) > 0
+    const publishedAt = new Date(repliedMessage.createdTimestamp);
+    const tags =
+        collectNote.search(/,|，/) > 0 ||
+        collectNote.search(/\/|、/) > 0
             ? collectNote.split(/,|，/).pop().split(/\/|、/)
             : [];
-            const discordUrl = repliedMessage.url;
-            
+    const discordUrl = repliedMessage.url;
+
+    // 检查作者是cori来判断Curator是否和Author一致
+    let curator;
+    if(message.author.id === process.env.clientId){
+        //contant第一个mention的username+编号
+        let curatorId = message.content.split(/>/)[0] 
+            console.log(curatorId)
+            curatorId = curatorId.split(/@/)[1]
+                console.log(curatorId)
+        message.mentions.users.map((user) => {
+            if(user.id == curatorId){
+                curator = `${user.username}#${user.discriminator}`
+                console.log(message.mentions.users)
+            }
+    })
+    } else {
+        curator = `${username}#${message.author.discriminator}`
+    }  
+
+
             let response = "";
-            console.log(handlerConfig.useNotion)
             if (handlerConfig.useNotion) {
                 let subResponse = "素材添加 Notion 中..." + "\n";
                 stateMessage.edit(response + subResponse);
@@ -71,12 +90,13 @@ export async function storage(repliedMessage,message){
                         publishedAt,
                         tags,
                         content,
+                        curator,
                         discordUrl
                         );
                         
                         subResponse =
-                        `✅ 素材碎片添加成功! 见: https://ddaocommunity.notion.site/b07350607bc446dbb39153db32fde357` +
-                        "\n";
+                        `✅ 素材碎片Notion添加成功! ` +
+                        "\n";//见: https://ddaocommunity.notion.site/b07350607bc446dbb39153db32fde357
                     } catch (e) {
                         logger.warn(e);
                         subResponse =
@@ -105,6 +125,7 @@ export async function storage(repliedMessage,message){
                             tags,
                             content,
                             attachments,
+                            curator,
                             discordUrl
                             );
                             subResponse = `✅ 素材碎片上链成功! 见:  https://crossbell.io/notes/${characterId}-${noteId}`;
@@ -134,11 +155,15 @@ export default new Event("messageCreate", async (message) => {
         }
         // Only author could ask the bot to handle his/her message
         if (message.author.id != repliedMessage.author.id) {
-            repliedMessage.reply(
-                `${message.author}觉得你说的很好，想让你投喂给我`
-            );
+            const collectNote = message.content.split(" ").splice(1).join(" ");
+            const confirmMessage = await repliedMessage.reply(`${message.author}觉得你说的很好，想让你投喂给我： `+ collectNote);
+            confirmMessage.react('👌')
+            // repliedMessage.reply(
+            //     `${message.author}觉得你说的很好，想让你投喂给我： `+ collectNote
+            // );
+
         } else {
-            storage(repliedMessage,message)
+            handle(repliedMessage,message)
         }
     }
 });
