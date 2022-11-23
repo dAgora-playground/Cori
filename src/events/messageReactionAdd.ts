@@ -29,10 +29,9 @@ export default new Event("messageReactionAdd", async (reaction, user) => {
     // 1.Atlas发了消息，ada@cori建议投喂
     // 2.Cori发出一条消息@atlas
     // 3.Atlas 点这条Cori消息。
-    // // 监控到emoji:white_check_mark: 
+    // 监控到emoji:white_check_mark: 
     if (reaction.emoji.name === '👌'){
         const reactionMessage = await reaction.message.fetch();
-        const curatorId = reactionMessage.content.split(/,|，/)[0];//推荐投喂人
         if (reaction.message.author.id === process.env.clientId ){//检查作者是cori
             //检查消息包括特定的内容.
             if (reactionMessage.content.includes('觉得你说的很好，想让你投喂给我') ) {

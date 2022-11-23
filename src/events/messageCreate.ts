@@ -71,7 +71,7 @@ export async function handle(repliedMessage,message){
                 curator = `${user.username}#${user.discriminator}`
                 console.log(message.mentions.users)
             }
-    })
+        })
     } else {
         curator = `${username}#${message.author.discriminator}`
     }  
@@ -158,10 +158,6 @@ export default new Event("messageCreate", async (message) => {
             const collectNote = message.content.split(" ").splice(1).join(" ");
             const confirmMessage = await repliedMessage.reply(`${message.author}觉得你说的很好，想让你投喂给我： `+ collectNote);
             confirmMessage.react('👌')
-            // repliedMessage.reply(
-            //     `${message.author}觉得你说的很好，想让你投喂给我： `+ collectNote
-            // );
-
         } else {
             handle(repliedMessage,message)
         }
