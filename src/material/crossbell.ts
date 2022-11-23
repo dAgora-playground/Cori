@@ -45,6 +45,7 @@ export async function useCrossbell(
     tags: string[],
     content: string,
     attachments: NoteMetadataAttachmentBase<"address">[],
+    curator: string,
     discordUrl: string
 ) {
     // If the author has not been created a character, create one first

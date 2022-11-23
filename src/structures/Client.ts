@@ -23,6 +23,7 @@ export class ExtendedClient extends Client {
                 GatewayIntentBits.Guilds,
                 GatewayIntentBits.GuildMessages,
                 GatewayIntentBits.MessageContent,
+                GatewayIntentBits.GuildMessageReactions,
             ],
         });
     }
