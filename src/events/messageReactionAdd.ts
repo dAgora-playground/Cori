@@ -1,46 +1,39 @@
-import { CommandInteractionOptionResolver, ReactionEmoji } from "discord.js";
-import { client } from "..";
 import { Event } from "../structures/Event";
-import { ExtendedInteraction } from "../typings/Command";
-import messageCreate from "./messageCreate";
-import interactionCreate from "./interactionCreate";
-import {handle} from "./messageCreate";
+import { handle } from "./messageCreate";
 
-
-export default new Event("messageReactionAdd", async (reaction, user) => {
-    console.log(`${reaction.message.author}'s message "${reaction.message.content}" gained a reaction!`);
+export default new Event("messageReactionAdd", async (reaction, reactUser) => {
     if (reaction.partial) {
-		// If the message this reaction belongs to was removed, the fetching might result in an API error which should be handled
-		try {
-			await reaction.fetch();
-		} catch (error) {
-			console.error('Something went wrong when fetching the message:', error);
-			// Return as `reaction.message.author` may be undefined/null
-			return;
-		}
-	}
+        // If the message this reaction belongs to was removed, the fetching might result in an API error which should be handled
+        try {
+            await reaction.fetch();
+        } catch (error) {
+            console.error(
+                "Something went wrong when fetching the message:",
+                error
+            );
+            // Return as `reaction.message.author` may be undefined/null
+            return;
+        }
+    }
 
-	// // Now the message has been cached and is fully available
-	// console.log(`${reaction.message.author}'s message "${reaction.message.content}" gained a reaction!`);
-	// // The reaction is now also fully available and the properties will be reflected accurately:
-	// console.log(`${reaction.count} user(s) have given the same reaction to this message!`);
-    
     // reaction完成建议内容的投喂:
     // 1.Atlas发了消息，ada@cori建议投喂
     // 2.Cori发出一条消息@atlas
     // 3.Atlas 点这条Cori消息。
-    // 监控到emoji:white_check_mark: 
-    if (reaction.emoji.name === '👌'){
-        const reactionMessage = await reaction.message.fetch();
-        if (reaction.message.author.id === process.env.clientId ){//检查作者是cori
-            //检查消息包括特定的内容.
-            if (reactionMessage.content.includes('觉得你说的很好，想让你投喂给我') ) {
-                const repliedMessage = await reaction.message.fetchReference();
-                //emoji点的人 = Cori引用消息的作者
-                if (repliedMessage.author.id === user.id){
+    // 监控到emoji👌
+    if (reaction.emoji.name === "👌") {
+        const confirmMsg = await reaction.message.fetch();
+        //如果作者是cori
+        if (reaction.message.author.id === process.env.clientId) {
+            //如果消息包括特定的内容
+            if (confirmMsg.content.includes("觉得你说的很好，想让你投喂给我")) {
+                const contentMsg = await reaction.message.fetchReference();
+                // Cori引用消息的作者 = emoji点的人
+                if (contentMsg.author.id === reactUser.id) {
                     //调用投喂功能，完成投喂
-                    handle(repliedMessage,reactionMessage)          
-                    return 
+                    await handle(contentMsg, confirmMsg);
+                    contentMsg.react("📦");
+                    return;
                 }
             }
         }
