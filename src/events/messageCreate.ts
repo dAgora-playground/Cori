@@ -14,24 +14,27 @@ const mentionBot = (message: Message): Boolean => {
 };
 
 //把存储notion和上链功能包起来，方便调用.
-export async function handle(contentMessage, confirmOrSuggestionMsg) {
+export async function handle(
+    contentMsg: Message<boolean>,
+    confirmOrSuggestionMsg: Message<boolean>
+) {
     const stateMessage = await confirmOrSuggestionMsg.reply("收藏中...");
-    const username = contentMessage.author.username;
-    const authorId = `${username}#${contentMessage.author.discriminator}`;
-    const authorAvatar = contentMessage.author.avatarURL();
-    const banner = contentMessage.author.bannerURL();
+    const username = contentMsg.author.username;
+    const authorId = `${username}#${contentMsg.author.discriminator}`;
+    const authorAvatar = contentMsg.author.avatarURL();
+    const banner = contentMsg.author.bannerURL();
     const guildName = confirmOrSuggestionMsg.guild.name;
     const channelName = (
         await confirmOrSuggestionMsg.guild.channels.fetch(
             confirmOrSuggestionMsg.channelId
         )
     ).name;
-    let content = contentMessage.content;
-    contentMessage.mentions.users.map((user) => {
+    let content = contentMsg.content;
+    contentMsg.mentions.users.map((user) => {
         content = content.replace("<@" + user.id + ">", "@" + user.username);
     });
 
-    const attachments = contentMessage.attachments.map((attachment) => ({
+    const attachments = contentMsg.attachments.map((attachment) => ({
         address: attachment.url,
         mime_type: attachment.contentType,
         size_in_bytes: attachment.size,
@@ -47,12 +50,12 @@ export async function handle(contentMessage, confirmOrSuggestionMsg) {
         collectNote.search(/,|，/) > 0 || collectNote.search(/\/|、/) < 0
             ? collectNote.split(/,|，/)[0]
             : "";
-    const publishedAt = new Date(contentMessage.createdTimestamp);
+    const publishedAt = new Date(contentMsg.createdTimestamp);
     const tags =
         collectNote.search(/,|，/) > 0 || collectNote.search(/\/|、/) > 0
             ? collectNote.split(/,|，/).pop().split(/\/|、/)
             : [];
-    const discordUrl = contentMessage.url;
+    const discordUrl = contentMsg.url;
 
     // 检查作者是cori来判断Curator是否和Author一致
     let curator: string;
@@ -127,6 +130,7 @@ export async function handle(contentMessage, confirmOrSuggestionMsg) {
             stateMessage.edit(response);
         }
     }
+    contentMsg.react("📦");
 }
 
 export default new Event("messageCreate", async (suggestionMsg) => {
@@ -140,6 +144,17 @@ export default new Event("messageCreate", async (suggestionMsg) => {
             contentMsg.author.bot ||
             !mentionBot(suggestionMsg)
         ) {
+            return;
+        }
+        // If this is a duplicate suggestion?
+        if (
+            contentMsg.reactions.cache.find(
+                (r) =>
+                    r.emoji.name === "📦" &&
+                    r.users.cache.has(process.env.clientId)
+            )
+        ) {
+            suggestionMsg.reply("重复投喂");
             return;
         }
         // Only author could ask the bot to handle his/her message

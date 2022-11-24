@@ -32,8 +32,6 @@ export default new Event("messageReactionAdd", async (reaction, reactUser) => {
                 if (contentMsg.author.id === reactUser.id) {
                     //调用投喂功能，完成投喂
                     await handle(contentMsg, confirmMsg);
-                    contentMsg.react("📦");
-                    return;
                 }
             }
         }
