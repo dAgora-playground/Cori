@@ -6,13 +6,13 @@ import {
 import { Wallet } from "ethers";
 import pinyin from "pinyin";
 
-const formatHandle = (author: string, guildId: string) => {
+const formatHandle = (authorId: string, guildId: string) => {
     const formatedGuildName = pinyin(guildId, {
         style: "normal",
     })
         .map((arr) => arr[0])
         .join("");
-    const tmpHandle = (author + "-" + formatedGuildName)
+    const tmpHandle = (authorId + "-" + formatedGuildName)
         .toLowerCase()
         .slice(0, 31);
     let handle = "";
@@ -33,6 +33,68 @@ const formatHandle = (author: string, guildId: string) => {
     return handle;
 };
 
+const createNewCharacter = async (
+    c: Contract,
+    admin: string,
+    handle: string,
+    name: string,
+    authorAvatar: string,
+    authorId: string,
+    banner: string
+) => {
+    const { data, transactionHash } = await c.createCharacter(admin, handle, {
+        name,
+        avatars: [authorAvatar],
+        banners: [
+            {
+                address: banner,
+                mime_type: "media/image", //TODO
+            },
+        ],
+        connected_accounts: ["csb://account:" + authorId + "@discord"],
+    });
+    return data;
+};
+
+const getCharacterByHandle = async (
+    c: Contract,
+    admin: string,
+    handle: string,
+    name: string,
+    authorAvatar: string,
+    authorId: string,
+    banner: string,
+    checkAdminAuthorized: boolean = true
+) => {
+    let characterId = (await c.getCharacterByHandle(handle)).data.characterId;
+
+    if (!characterId) {
+        if ((await c.existsCharacterForHandle(handle)).data) {
+            throw new Error("handle has existed");
+        }
+
+        characterId = await createNewCharacter(
+            c,
+            admin,
+            handle,
+            name,
+            authorAvatar,
+            authorId,
+            banner
+        );
+    }
+
+    const characterOwner = await c.contract.ownerOf(characterId);
+    if (characterOwner !== admin) {
+        const operator = (await c.getOperator(characterId)).data;
+        if (operator !== admin) {
+            throw new Error(characterId + "(" + handle + ") not authorized");
+        }
+    }
+
+    return characterId;
+};
+
 export async function useCrossbell(
     username: string,
     authorId: string,
@@ -45,7 +107,10 @@ export async function useCrossbell(
     tags: string[],
     content: string,
     attachments: NoteMetadataAttachmentBase<"address">[],
-    curator: string,
+    curatorId: string,
+    curatorUsername: string,
+    curatorAvatar: string,
+    curatorBanner: string,
     discordUrl: string
 ) {
     // If the author has not been created a character, create one first
@@ -55,43 +120,37 @@ export async function useCrossbell(
     const contract = new Contract(priKey);
     await contract.connect();
     const handle = formatHandle(authorId, guildName);
+
+    const curatorHandle = formatHandle(curatorId, guildName);
+
     //TODO: is valid handle?
     if (handle.length < 3) {
         throw new Error("handle length is wrong");
     }
 
-    let characterId = (await contract.getCharacterByHandle(handle)).data
-        .characterId;
+    const characterId = await getCharacterByHandle(
+        contract,
+        admin,
+        handle,
+        username,
+        authorAvatar,
+        authorId,
+        banner
+    );
 
-    if (!characterId) {
-        if ((await contract.existsCharacterForHandle(handle)).data) {
-            throw new Error("handle has existed");
-        }
-        const { data, transactionHash } = await contract.createCharacter(
+    let curatorCharacterId = characterId;
+    if (curatorHandle !== handle) {
+        curatorCharacterId = await getCharacterByHandle(
+            contract,
             admin,
-            handle,
-            {
-                name: username,
-                avatars: [authorAvatar],
-                banners: [
-                    {
-                        address: banner,
-                        mime_type: "media/image", //TODO
-                    },
-                ],
-                connected_accounts: ["csb://account:" + authorId + "@discord"],
-            }
+            curatorHandle,
+            curatorUsername,
+            curatorAvatar,
+            curatorId,
+            curatorBanner,
+            false
         );
-
-        characterId = data;
-
-        await contract.setOperator(characterId, admin);
     }
-    const operator = (await contract.getOperator(characterId)).data;
-    // TODO: Check if admin is the owner
-    // if (operator !== admin) {
-    //     throw new Error("not authorized");
-    // }
 
     const note = {
         sources: [
@@ -105,6 +164,15 @@ export async function useCrossbell(
         attachments,
         date_published: publishedTime.toISOString(),
         external_urls: [discordUrl],
+        attributes: [
+            {
+                trait_type: "curator",
+                value:
+                    "csb://account:character-" +
+                    curatorCharacterId +
+                    "@crossbell",
+            },
+        ],
     } as NoteMetadata;
     const noteId = (await contract.postNote(characterId, note)).data.noteId;
     return { characterId, noteId };

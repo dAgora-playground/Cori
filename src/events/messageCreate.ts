@@ -1,7 +1,7 @@
 require("dotenv").config();
 import { Event } from "../structures/Event";
 import materialHandler from "../material";
-import { Message } from "discord.js";
+import { Message, User } from "discord.js";
 import { handlerConfig } from "../config";
 import { logger } from "ethers";
 
@@ -13,16 +13,31 @@ const mentionBot = (message: Message): Boolean => {
     );
 };
 
+const getUserId = (user: User) => `${user.username}#${user.discriminator}`;
+
+const getMsgUserInfo = (msg: Message) => {
+    const contentAuthor = msg.author;
+    return {
+        username: contentAuthor.username,
+        id: getUserId(contentAuthor),
+        avatar: contentAuthor.avatarURL(),
+        banner: contentAuthor.bannerURL(),
+    };
+};
+
 //把存储notion和上链功能包起来，方便调用.
 export async function handle(
     contentMsg: Message<boolean>,
     confirmOrSuggestionMsg: Message<boolean>
 ) {
     const stateMessage = await confirmOrSuggestionMsg.reply("收藏中...");
-    const username = contentMsg.author.username;
-    const authorId = `${username}#${contentMsg.author.discriminator}`;
-    const authorAvatar = contentMsg.author.avatarURL();
-    const banner = contentMsg.author.bannerURL();
+    const {
+        username: authorUsername,
+        id: authorDiscordId,
+        avatar: authorAvatar,
+        banner: authorBanner,
+    } = getMsgUserInfo(contentMsg);
+
     const guildName = confirmOrSuggestionMsg.guild.name;
     const channelName = (
         await confirmOrSuggestionMsg.guild.channels.fetch(
@@ -58,18 +73,24 @@ export async function handle(
     const discordUrl = contentMsg.url;
 
     // 检查作者是cori来判断Curator是否和Author一致
-    let curator: string;
+    let curatorDiscordId: string;
+    let curatorUsername: string;
+    let curatorAvatar: string;
+    let curatorBanner: string;
     if (confirmOrSuggestionMsg.author.id === process.env.clientId) {
         //content第一个mention的username+编号
         let curatorId = confirmOrSuggestionMsg.content.split(/>/)[0];
         curatorId = curatorId.split(/@/)[1];
         confirmOrSuggestionMsg.mentions.users.map((user) => {
             if (user.id == curatorId) {
-                curator = `${user.username}#${user.discriminator}`;
+                curatorUsername = user.username;
+                curatorDiscordId = getUserId(user);
+                curatorAvatar = user.avatarURL();
+                curatorBanner = user.bannerURL();
             }
         });
     } else {
-        curator = `${username}#${confirmOrSuggestionMsg.author.discriminator}`;
+        curatorDiscordId = authorDiscordId;
     }
 
     let response = "";
@@ -78,14 +99,14 @@ export async function handle(
         stateMessage.edit(response + subResponse);
         try {
             await materialHandler.useNotion(
-                authorId,
+                authorDiscordId,
                 guildName,
                 channelName,
                 title,
                 publishedAt,
                 tags,
                 content,
-                curator,
+                curatorDiscordId,
                 discordUrl
             );
 
@@ -100,16 +121,15 @@ export async function handle(
             stateMessage.edit(response);
         }
     }
-
     if (handlerConfig.useCrossbell) {
         let subResponse = "素材上链中..." + "\n";
         stateMessage.edit(response + subResponse);
         try {
             const { characterId, noteId } = await materialHandler.useCrossbell(
-                username,
-                authorId,
+                authorUsername,
+                authorDiscordId,
                 authorAvatar,
-                banner,
+                authorBanner,
                 guildName,
                 channelName,
                 title,
@@ -117,10 +137,14 @@ export async function handle(
                 tags,
                 content,
                 attachments,
-                curator,
+                curatorDiscordId,
+                curatorUsername,
+                curatorAvatar,
+                curatorBanner,
                 discordUrl
             );
             subResponse = `✅ 素材碎片上链成功! 见:  https://crossbell.io/notes/${characterId}-${noteId}`;
+            contentMsg.react("📦");
         } catch (e) {
             logger.warn(e);
             subResponse =
@@ -130,7 +154,6 @@ export async function handle(
             stateMessage.edit(response);
         }
     }
-    contentMsg.react("📦");
 }
 
 export default new Event("messageCreate", async (suggestionMsg) => {
