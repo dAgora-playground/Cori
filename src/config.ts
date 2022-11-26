@@ -1,4 +1,4 @@
 export const handlerConfig = {
-    useNotion: false,
+    useNotion: true,
     useCrossbell: true,
 };
