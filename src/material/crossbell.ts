@@ -84,11 +84,15 @@ const getCharacterByHandle = async (
         );
     }
 
-    const characterOwner = await c.contract.ownerOf(characterId);
-    if (characterOwner !== admin) {
-        const operator = (await c.getOperator(characterId)).data;
-        if (operator !== admin) {
-            throw new Error(characterId + "(" + handle + ") not authorized");
+    if (checkAdminAuthorized) {
+        const characterOwner = await c.contract.ownerOf(characterId);
+        if (characterOwner !== admin) {
+            const authorized = (await c.isOperator(characterId, admin)).data;
+            if (!authorized) {
+                throw new Error(
+                    characterId + "(" + handle + ") not authorized"
+                );
+            }
         }
     }
 
