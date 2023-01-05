@@ -154,7 +154,6 @@ export async function handle(
             stateMessage.edit(response);
         }
     }
-    contentMsg.react("📦");
 }
 
 export default new Event("messageCreate", async (suggestionMsg) => {
