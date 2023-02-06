@@ -56,6 +56,16 @@ const createNewCharacter = async (
     return data;
 };
 
+export const getPermission = async (
+    c: Contract,
+    characterId: number,
+    admin: string
+) => {
+    const permissions = (
+        await c.getOperatorPermissionsForCharacter(characterId, admin)
+    ).data;
+    return permissions;
+};
 const getCharacterByHandle = async (
     c: Contract,
     admin: string,
@@ -83,12 +93,11 @@ const getCharacterByHandle = async (
             banner
         );
     }
-
     if (checkAdminAuthorized) {
         const characterOwner = await c.contract.ownerOf(characterId);
         if (characterOwner !== admin) {
-            const authorized = (await c.isOperator(characterId, admin)).data;
-            if (!authorized) {
+            const permissions = await getPermission(c, characterId, admin);
+            if (!permissions.includes("POST_NOTE")) {
                 throw new Error(
                     characterId + "(" + handle + ") not authorized"
                 );
@@ -97,6 +106,18 @@ const getCharacterByHandle = async (
     }
 
     return characterId;
+};
+
+export const makeContract = async (priKey?: string) => {
+    const contract = new Contract(priKey);
+    await contract.connect();
+    return contract;
+};
+
+export const getAdminContract = async (priKey: string) => {
+    const admin = await new Wallet(priKey).getAddress();
+    const contract = await makeContract(priKey);
+    return { admin, contract };
 };
 
 export async function useCrossbell(
@@ -120,9 +141,7 @@ export async function useCrossbell(
     // If the author has not been created a character, create one first
     // Otherwise, post note directly
     const priKey = process.env.adminPrivateKey;
-    const admin = await new Wallet(priKey).getAddress();
-    const contract = new Contract(priKey);
-    await contract.connect();
+    const { admin, contract } = await getAdminContract(priKey);
     const handle = formatHandle(authorId, guildName);
 
     const curatorHandle = formatHandle(curatorId, guildName);
