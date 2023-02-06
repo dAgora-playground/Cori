@@ -181,7 +181,7 @@ type CoriConfig = {
     'Discord Server Name': RichTextPropertyItemObjectResponse,
 }
 
-export async function getCoriConfig(discordServerID: string): Promise<CoriConfig | null> {
+export async function getCoriConfig(discordServerID: string): Promise<CoriConfig | undefined> {
     const databaseId = process.env.configTable;
     const response = await notion.databases.query({
         database_id: databaseId,
@@ -193,10 +193,11 @@ export async function getCoriConfig(discordServerID: string): Promise<CoriConfig
     const data = response.results;
 
     if (data.length) {
-        return data[0].properties;
+        const page = data.find((page) => page.properties["Discord Server ID"].title[0].text.content === discordServerID);
+        return page.properties as CoriConfig;
     }
 
-    return null;
+    return undefined;
 }
 
 type Language = '简体中文' | '繁體中文' | 'EN';
