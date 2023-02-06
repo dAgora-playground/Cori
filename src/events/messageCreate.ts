@@ -4,7 +4,10 @@ import materialHandler from "../material";
 import { Message, User } from "discord.js";
 import { handlerConfig } from "../config";
 import { logger } from "ethers";
+import i18next from '../material/i18n';
+import { createCoriConfig, getCoriConfig } from '../material/notion';
 
+const { t } = i18next;
 const mentionBot = (message: Message): Boolean => {
     // message.mentions.users is a collection, and message.mentions.users.first()
     // doesn't mean the first one in mentions
@@ -30,7 +33,14 @@ export async function handle(
     contentMsg: Message<boolean>,
     confirmOrSuggestionMsg: Message<boolean>
 ) {
-    const stateMessage = await confirmOrSuggestionMsg.reply("收藏中...");
+    let config = await getCoriConfig(contentMsg.guildId);
+    if (!config) {
+        config = await createCoriConfig(contentMsg.guildId, contentMsg.guild.name, '简体中文');
+    }
+    const language = config['Language'].select.name;
+    i18next.changeLanguage(language);
+
+    const stateMessage = await confirmOrSuggestionMsg.reply(t('collecting'));
     const {
         username: authorUsername,
         id: authorDiscordId,
@@ -95,7 +105,7 @@ export async function handle(
 
     let response = "";
     if (handlerConfig.useNotion) {
-        let subResponse = "素材添加 Notion 中..." + "\n";
+        let subResponse = t('push to notion') + "\n";
         stateMessage.edit(response + subResponse);
         try {
             await materialHandler.useNotion(
@@ -110,19 +120,17 @@ export async function handle(
                 discordUrl
             );
 
-            subResponse = `✅ 素材碎片Notion添加成功! ` + "\n"; //见: https://ddaocommunity.notion.site/b07350607bc446dbb39153db32fde357
+            subResponse = t('notion success') + "\n"; //见: https://ddaocommunity.notion.site/b07350607bc446dbb39153db32fde357
         } catch (e) {
             logger.warn(e);
-            subResponse =
-                ":negative_squared_cross_mark: 添加 Notion 失败, 请联络 BOT 管理员协助处理" +
-                "\n";
+            subResponse = t('notion error') + "\n";
         } finally {
             response += subResponse;
             stateMessage.edit(response);
         }
     }
     if (handlerConfig.useCrossbell) {
-        let subResponse = "素材上链中..." + "\n";
+        let subResponse = t('push to chain');//"素材上链中..." + "\n";
         stateMessage.edit(response + subResponse);
         try {
             const { characterId, noteId } = await materialHandler.useCrossbell(
@@ -143,18 +151,16 @@ export async function handle(
                 curatorBanner,
                 discordUrl
             );
-            subResponse = `✅ 素材碎片上链成功! 见:  https://crossbell.io/notes/${characterId}-${noteId}`;
+            subResponse = t('chain success', { characterId, noteId });
             contentMsg.react("📦");
         } catch (e) {
             logger.warn(e);
-            subResponse =
-                ":negative_squared_cross_mark: 上链失败, 请联络 BOT 管理员协助处理";
+            subResponse = t('chain error');
         } finally {
             response += subResponse;
             stateMessage.edit(response);
         }
     }
-    contentMsg.react("📦");
 }
 
 export default new Event("messageCreate", async (suggestionMsg) => {
@@ -170,6 +176,14 @@ export default new Event("messageCreate", async (suggestionMsg) => {
         ) {
             return;
         }
+
+        // get language from cori config
+        let config = await getCoriConfig(contentMsg.guildId);
+        if (!config) {
+            config = await createCoriConfig(contentMsg.guildId, contentMsg.guild.name, '简体中文');
+        }
+        const language = config['Language'].select.name;
+
         // If this is a duplicate suggestion?
         if (
             contentMsg.reactions.cache.find(
@@ -178,7 +192,7 @@ export default new Event("messageCreate", async (suggestionMsg) => {
                     r.users.cache.has(process.env.clientId)
             )
         ) {
-            suggestionMsg.reply("重复投喂");
+            suggestionMsg.reply(t('repeated'));
             return;
         }
         // Only author could ask the bot to handle his/her message
@@ -188,8 +202,8 @@ export default new Event("messageCreate", async (suggestionMsg) => {
                 .splice(1)
                 .join(" ");
             const confirmMsg = await contentMsg.reply(
-                `${suggestionMsg.author}觉得你说的很好，想让你投喂给我。点👌确认\n ` +
-                    collectNote
+                t('confirm', { author: suggestionMsg.author.username }) +
+                `\n ` + collectNote
             );
             confirmMsg.react("👌");
         } else {
