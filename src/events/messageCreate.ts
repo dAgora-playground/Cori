@@ -35,7 +35,7 @@ export async function handle(
 ) {
     let config = await getCoriConfig(contentMsg.guildId);
     if (!config) {
-        config = await createCoriConfig(contentMsg.guildId, contentMsg.guild.name, '简体中文');
+        config = await createCoriConfig(contentMsg.guildId, contentMsg.guild.name, 'EN');
     }
     const language = config['Language'].select.name;
     i18next.changeLanguage(language);
@@ -180,7 +180,7 @@ export default new Event("messageCreate", async (suggestionMsg) => {
         // get language from cori config
         let config = await getCoriConfig(contentMsg.guildId);
         if (!config) {
-            config = await createCoriConfig(contentMsg.guildId, contentMsg.guild.name, '简体中文');
+            config = await createCoriConfig(contentMsg.guildId, contentMsg.guild.name, 'EN');
         }
         const language = config['Language'].select.name;
 
