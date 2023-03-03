@@ -1,3 +1,5 @@
+import { RichTextPropertyItemObjectResponse, SelectPropertyItemObjectResponse, TitlePropertyItemObjectResponse } from '@notionhq/client/build/src/api-endpoints';
+
 // import { Client } from "@notionhq/client";
 const { Client } = require("@notionhq/client");
 const notion = new Client({ auth: process.env.notionKey });
@@ -171,4 +173,71 @@ export async function useNotion(
     });
     const data = response.results[0].properties;
     return JSON.stringify(data);
+}
+
+type CoriConfig = {
+    Language: SelectPropertyItemObjectResponse,
+    'Discord Server ID': TitlePropertyItemObjectResponse,
+    'Discord Server Name': RichTextPropertyItemObjectResponse,
+}
+
+export async function getCoriConfig(discordServerID: string): Promise<CoriConfig | undefined> {
+    const databaseId = process.env.configTable;
+    const response = await notion.databases.query({
+        database_id: databaseId,
+        select: {
+            property: "Discord Server ID",
+            title: { equals: discordServerID },
+        }
+    });
+    const data = response.results;
+
+    if (data.length) {
+        const page = data.find((page) => page.properties["Discord Server ID"].title[0].text.content === discordServerID);
+        return page.properties as CoriConfig;
+    }
+
+    return undefined;
+}
+
+type Language = '简体中文' | '繁體中文' | 'EN';
+export async function createCoriConfig(discordServerID: string, discordServerName: string, language: Language): Promise<CoriConfig> {
+    const databaseId = process.env.configTable;
+    const response = await notion.pages.create({
+        parent: {
+            database_id: databaseId,
+        },
+        properties: {
+            "Discord Server ID": {
+                type: 'title',
+                title: [
+                    {
+                        type: 'text',
+                        text: {
+                            content: discordServerID,
+                        },
+                    },
+                ],
+            },
+            "Discord Server Name": {
+                type: 'rich_text',
+                rich_text: [
+                    {
+                        type: 'text',
+                        text: {
+                            content: discordServerName,
+                        },
+                    },
+                ],
+            },
+            Language: {
+                type: "select",
+                select: {
+                    name: language,
+                },
+            }
+        },
+    });
+
+    return response.properties;
 }

@@ -14,16 +14,32 @@ Agora 孵化于 dDAO 社区，是一个由社区去中心化开发运营，实�
 之后素材会收藏到 Notion 或 Crossbell 链上。
 ## Getting Started
 
+在 Discord Developer Portal 设置 Discord bot 需要的权限
+MESSAGE CONTENT INTENT
+Read Messages/View Channels
+Send Messages
+Send Messages in Threads
+Add Reactions
+
+### 准备测试用的两个 Notion database
+从 [模版页面](https://breezy-cormorant-151.notion.site/cadaf8dc964f476aa8301d5ce3eeed74) 点击右上角 Duplicate, 将模版页面复制到你的 Notion workspace。
+
+这个页面包含素材碎片（materialTable）、协同写作者（relationTable）和 Cori 配置（configTable）三个表，请在在新页面中打开每个表（Open as full page），然后从浏览器地址栏获取表的 32 字符长的 ID，例如 `https://www.notion.so/e765e495143b1e3128784198df25301c` 中，`e765e495143b1e3128784198df25301c` 就是这个表的 ID。
+
+根据[文档](https://developers.notion.com/docs/create-a-notion-integration#step-2-share-a-database-with-your-integration)建立一个 Notion integration，并将这个 integration 连接到你的 database。
+
+### 开始
 ```sh
-nvm use v16.17.0
+nvm use
 npm install 
 cp .env.example .env
 #
 # botToken: bot token
 # clientId: bot ID
-# notionKey: notion api key
-# materialTable: card database
-# relationTable: author database
+# notionKey: notion api key started with 'secret_'
+# materialTable: card database 素材碎片表ID
+# relationTable: author database 协同写作者表ID
+# configTable: config database Cori 配置表ID
 # adminPrivateKey: admin privatekey
 # environment: dev | prod | debug
 #

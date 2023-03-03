@@ -25,9 +25,9 @@
     "dotenv": "^16.0.3",
     "ethers": "^5.7.2",
     "glob": "^8.0.3",
+    "i18next": "^22.4.1",
     "node-csv": "^0.1.2",
-    "pinyin": "^3.0.0-alpha.4",
-    "undici": "^5.12.0"
+    "pinyin": "^3.0.0-alpha.4"
   },
   "devDependencies": {
     "@babel/core": "^7.20.5",
