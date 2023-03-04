@@ -22,7 +22,7 @@ Send Messages in Threads
 Add Reactions
 
 ### 准备测试用的两个 Notion database
-从 [模版页面](https://breezy-cormorant-151.notion.site/cadaf8dc964f476aa8301d5ce3eeed74) 点击右上角 Duplicate, 将模版页面复制到你的 Notion workspace。
+从 [模版页面](https://ddaocommunity.notion.site/b07350607bc446dbb39153db32fde357)点击右上角 Duplicate, 将模版页面复制到你的 Notion workspace。
 
 这个页面包含素材碎片（materialTable）、协同写作者（relationTable）和 Cori 配置（configTable）三个表，请在在新页面中打开每个表（Open as full page），然后从浏览器地址栏获取表的 32 字符长的 ID，例如 `https://www.notion.so/e765e495143b1e3128784198df25301c` 中，`e765e495143b1e3128784198df25301c` 就是这个表的 ID。
 

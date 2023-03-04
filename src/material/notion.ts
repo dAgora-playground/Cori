@@ -1,4 +1,8 @@
-import { RichTextPropertyItemObjectResponse, SelectPropertyItemObjectResponse, TitlePropertyItemObjectResponse } from '@notionhq/client/build/src/api-endpoints';
+import {
+    RichTextPropertyItemObjectResponse,
+    SelectPropertyItemObjectResponse,
+    TitlePropertyItemObjectResponse,
+} from "@notionhq/client/build/src/api-endpoints";
 
 // import { Client } from "@notionhq/client";
 const { Client } = require("@notionhq/client");
@@ -176,32 +180,42 @@ export async function useNotion(
 }
 
 type CoriConfig = {
-    Language: SelectPropertyItemObjectResponse,
-    'Discord Server ID': TitlePropertyItemObjectResponse,
-    'Discord Server Name': RichTextPropertyItemObjectResponse,
-}
+    Language: SelectPropertyItemObjectResponse;
+    "Discord Server ID": TitlePropertyItemObjectResponse;
+    "Discord Server Name": RichTextPropertyItemObjectResponse;
+};
 
-export async function getCoriConfig(discordServerID: string): Promise<CoriConfig | undefined> {
+export async function getCoriConfig(
+    discordServerID: string
+): Promise<CoriConfig | undefined> {
     const databaseId = process.env.configTable;
     const response = await notion.databases.query({
         database_id: databaseId,
         select: {
             property: "Discord Server ID",
             title: { equals: discordServerID },
-        }
+        },
     });
     const data = response.results;
 
     if (data.length) {
-        const page = data.find((page) => page.properties["Discord Server ID"].title[0].text.content === discordServerID);
-        return page.properties as CoriConfig;
+        const page = data.find(
+            (page) =>
+                page.properties["Discord Server ID"].title[0].text.content ===
+                discordServerID
+        );
+        if (!!page) return page.properties as CoriConfig;
     }
 
     return undefined;
 }
 
-type Language = '简体中文' | '繁體中文' | 'EN';
-export async function createCoriConfig(discordServerID: string, discordServerName: string, language: Language): Promise<CoriConfig> {
+type Language = "简体中文" | "繁體中文" | "EN";
+export async function createCoriConfig(
+    discordServerID: string,
+    discordServerName: string,
+    language: Language
+): Promise<CoriConfig> {
     const databaseId = process.env.configTable;
     const response = await notion.pages.create({
         parent: {
@@ -209,10 +223,10 @@ export async function createCoriConfig(discordServerID: string, discordServerNam
         },
         properties: {
             "Discord Server ID": {
-                type: 'title',
+                type: "title",
                 title: [
                     {
-                        type: 'text',
+                        type: "text",
                         text: {
                             content: discordServerID,
                         },
@@ -220,10 +234,10 @@ export async function createCoriConfig(discordServerID: string, discordServerNam
                 ],
             },
             "Discord Server Name": {
-                type: 'rich_text',
+                type: "rich_text",
                 rich_text: [
                     {
-                        type: 'text',
+                        type: "text",
                         text: {
                             content: discordServerName,
                         },
@@ -235,7 +249,7 @@ export async function createCoriConfig(discordServerID: string, discordServerNam
                 select: {
                     name: language,
                 },
-            }
+            },
         },
     });
 

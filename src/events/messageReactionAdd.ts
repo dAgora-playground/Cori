@@ -1,5 +1,5 @@
 import { Event } from "../structures/Event";
-import { handle } from "./messageCreate";
+import { handle } from "../utils";
 
 export default new Event("messageReactionAdd", async (reaction, reactUser) => {
     if (reaction.partial) {
