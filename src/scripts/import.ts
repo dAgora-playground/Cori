@@ -39,6 +39,9 @@ csv.mapFile("./data/notion.csv", async function (err, data) {
                 content,
                 attachments,
                 curator,
+                "",
+                "",
+                "",
                 discordUrl
             );
             console.log(characterId, noteId);
