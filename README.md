@@ -11,7 +11,7 @@ Agora 孵化于 dDAO 社区，是一个由社区去中心化开发运营，实�
 ```
 \n\n@Cori [标题], [标签1]/[标签2]/.../[标签3]\n\n //括号不用填，标题与标签的分隔逗点可为半形或全形
 ```
-之后素材会收藏到 Notion 或 Crossbell 链上。
+之后素材会收藏到 Notion 和 Crossbell 链上。
 ## Getting Started
 
 在 Discord Developer Portal 设置 Discord bot 需要的权限
