@@ -103,8 +103,8 @@ export async function handle(
 
     let response = "";
     if (handlerConfig.useNotion) {
-        let subResponse = t("push to notion") + "\n";
-        stateMessage.edit(response + subResponse);
+        // let subResponse = t("push to notion") + "\n";
+        // stateMessage.edit(response + subResponse);
         try {
             await materialHandler.useNotion(
                 authorDiscordId,
@@ -117,14 +117,14 @@ export async function handle(
                 curatorDiscordId,
                 discordUrl
             );
-
-            subResponse = t("notion success") + "\n"; //见: https://ddaocommunity.notion.site/b07350607bc446dbb39153db32fde357
+            // Hide notion response
+            // subResponse = t("notion success") + "\n"; //见: https://ddaocommunity.notion.site/b07350607bc446dbb39153db32fde357
         } catch (e) {
             logger.warn(e);
-            subResponse = t("notion error") + "\n";
+            // subResponse = t("notion error") + "\n";
         } finally {
-            response += subResponse;
-            stateMessage.edit(response);
+            // response += subResponse;
+            // stateMessage.edit(response);
         }
     }
     if (handlerConfig.useCrossbell) {
