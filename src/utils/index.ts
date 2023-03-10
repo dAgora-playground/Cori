@@ -27,7 +27,7 @@ export async function setLanguage(guildId: string, guildName: string) {
         const language = config["Language"].select.name;
         i18next.changeLanguage(language);
     } catch (e) {
-        console.log(e);
+        logger.warn("setLanguage(" + guildId + "," + guildName + ")", e);
         i18next.changeLanguage("EN");
     }
 }

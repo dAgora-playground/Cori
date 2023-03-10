@@ -76,7 +76,9 @@ const getCharacterByHandle = async (
     banner: string,
     checkAdminAuthorized: boolean = true
 ) => {
-    let characterId = (await c.getCharacterByHandle(handle)).data.characterId;
+    let characterId = (
+        await c.contract.getCharacterByHandle(handle)
+    ).characterId.toNumber();
 
     if (!characterId) {
         if ((await c.existsCharacterForHandle(handle)).data) {
