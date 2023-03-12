@@ -1,5 +1,7 @@
 import { Event } from "../structures/Event";
-import { handle } from "../utils";
+import { handle, setLanguage } from "../utils";
+import i18next from "../material/i18n";
+const { t } = i18next;
 
 export default new Event("messageReactionAdd", async (reaction, reactUser) => {
     if (reaction.partial) {
@@ -26,7 +28,10 @@ export default new Event("messageReactionAdd", async (reaction, reactUser) => {
         //如果作者是cori
         if (reaction.message.author.id === process.env.clientId) {
             //如果消息包括特定的内容
-            if (confirmMsg.content.includes("觉得你说的很好，想让你投喂给我")) {
+            setLanguage(confirmMsg.guildId, confirmMsg.guild.name);
+            const confirmStr = t("confirm", { author: "" });
+
+            if (confirmMsg.content.includes(confirmStr)) {
                 const contentMsg = await reaction.message.fetchReference();
                 // Cori引用消息的作者 = emoji点的人
                 if (contentMsg.author.id === reactUser.id) {
