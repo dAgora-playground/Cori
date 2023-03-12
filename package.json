@@ -15,12 +15,12 @@
     "start:prod": "node dist/index.js",
     "build": "tsc",
     "watch": "tsc -w",
-    "test": "jest"
+    "test": "CROSSBELL_RPC_ADDRESS=http://127.0.0.1:8545 jest"
   },
   "license": "MIT",
   "dependencies": {
     "@notionhq/client": "^2.2.1",
-    "crossbell.js": "^0.16.6",
+    "crossbell.js": "^0.16.8",
     "discord.js": "^14.6.0",
     "dotenv": "^16.0.3",
     "ethers": "^5.7.2",
