@@ -66,9 +66,12 @@ export async function handle(
     }));
 
     const collectNote = confirmOrSuggestionMsg.content
+        .split("\n")
+        .splice(-1)[0] // last line of the message
         .split(" ")
         .splice(1)
-        .join(" ");
+        .join(" ") // removes the "<@xxx>"
+        .trim();
     const title =
         collectNote.search(/,|，/) > 0 || collectNote.search(/\/|、/) < 0
             ? collectNote.split(/,|，/)[0]
@@ -76,7 +79,11 @@ export async function handle(
     const publishedAt = new Date(contentMsg.createdTimestamp);
     const tags =
         collectNote.search(/,|，/) > 0 || collectNote.search(/\/|、/) > 0
-            ? collectNote.split(/,|，/).pop().split(/\/|、/)
+            ? collectNote
+                  .split(/,|，/)
+                  .pop()
+                  .split(/\/|、/)
+                  .map((t) => t.trim())
             : [];
     const discordUrl = contentMsg.url;
 
