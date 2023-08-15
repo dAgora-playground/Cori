@@ -1,6 +1,7 @@
 import { Event } from "../structures/Event";
 import { handle, setLanguage } from "../utils";
 import i18next from "../material/i18n";
+import { logger } from "ethers";
 const { t } = i18next;
 
 export default new Event("messageReactionAdd", async (reaction, reactUser) => {
@@ -9,7 +10,7 @@ export default new Event("messageReactionAdd", async (reaction, reactUser) => {
         try {
             await reaction.fetch();
         } catch (error) {
-            console.error(
+            logger.debug(
                 "Something went wrong when fetching the message:",
                 error
             );
@@ -19,16 +20,13 @@ export default new Event("messageReactionAdd", async (reaction, reactUser) => {
     }
 
     // reaction完成建议内容的投喂:
-    // 1.Atlas发了消息，ada@cori建议投喂
-    // 2.Cori发出一条消息@atlas
-    // 3.Atlas 点这条Cori消息。
     // 监控到emoji👌
     if (reaction.emoji.name === "👌") {
         const confirmMsg = await reaction.message.fetch();
         //如果作者是cori
         if (reaction.message.author.id === process.env.clientId) {
             //如果消息包括特定的内容
-            setLanguage(confirmMsg.guildId, confirmMsg.guild.name);
+            await setLanguage(confirmMsg.guildId, confirmMsg.guild.name);
             const confirmStr = t("confirm", { author: "" });
 
             if (confirmMsg.content.includes(confirmStr)) {

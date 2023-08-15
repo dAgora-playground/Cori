@@ -2,9 +2,14 @@ import materialHandler from "../material";
 import i18next from "../material/i18n";
 import { Message, User } from "discord.js";
 import { handlerConfig } from "../config";
-import { logger } from "ethers";
 import { createCoriConfig, getCoriConfig } from "../material/notion";
+import bunyan from "bunyan";
+
 const { t } = i18next;
+
+export const logger = bunyan.createLogger({
+    name: "nunti",
+});
 
 const getUserId = (user: User) => `${user.username}#${user.discriminator}`;
 
@@ -25,10 +30,10 @@ export async function setLanguage(guildId: string, guildName: string) {
             config = await createCoriConfig(guildId, guildName, "EN");
         }
         const language = config["Language"].select.name;
-        i18next.changeLanguage(language);
+        await i18next.changeLanguage(language);
     } catch (e) {
         logger.warn("setLanguage(" + guildId + "," + guildName + ")", e);
-        i18next.changeLanguage("EN");
+        await i18next.changeLanguage("EN");
     }
 }
 

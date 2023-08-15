@@ -27,7 +27,7 @@ export default new Event("messageCreate", async (suggestionMsg) => {
             return;
         }
 
-        setLanguage(contentMsg.guildId, contentMsg.guild.name);
+        await setLanguage(contentMsg.guildId, contentMsg.guild.name);
 
         // If this is a duplicate suggestion?
         if (

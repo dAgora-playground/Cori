@@ -3,10 +3,6 @@
   "version": "1.0.0",
   "description": "[Cori](https://ddaocommunity.notion.site/Cori-4b631a6498c24f449ab5fbb865dbefca) 是一个 discord bot，属于协同写作产品 Agora 的一部分。",
   "main": "index.js",
-  "engines": {
-    "npm": ">=8.0.0 <9.0.0",
-    "node": ">=16.0.0 <17.0.0"
-  },
   "scripts": {
     "migrate": "CROSSBELL_RPC_ADDRESS=http://127.0.0.1:8545  ts-node src/scripts/import.ts",
     "migrate:mainnet": "ts-node src/scripts/import.ts",
@@ -20,6 +16,8 @@
   "license": "MIT",
   "dependencies": {
     "@notionhq/client": "^2.2.1",
+    "@types/bunyan": "^1.8.8",
+    "bunyan": "^1.8.15",
     "crossbell.js": "^0.16.8",
     "discord.js": "^14.6.0",
     "dotenv": "^16.0.3",

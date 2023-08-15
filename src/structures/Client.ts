@@ -10,6 +10,7 @@ import glob from "glob";
 import { promisify } from "util";
 import { RegisterCommandsOptions } from "../typings/client";
 import { Event } from "./Event";
+import { logger } from "ethers";
 
 const globPromise = promisify(glob);
 
@@ -39,10 +40,10 @@ export class ExtendedClient extends Client {
     async registerCommands({ commands, guildId }: RegisterCommandsOptions) {
         if (guildId) {
             this.guilds.cache.get(guildId)?.commands.set(commands);
-            console.log(`Registering commands to ${guildId}.`);
+            logger.info(`Registering commands to ${guildId}.`);
         } else {
             this.application?.commands.set(commands);
-            console.log("Registering global commands.");
+            logger.info("Registering global commands.");
         }
     }
 
@@ -55,7 +56,6 @@ export class ExtendedClient extends Client {
         commandFiles.forEach(async (filePath) => {
             const command: CommandType = await this.importFile(filePath);
             if (!command.name) return;
-            console.log(command);
 
             this.commands.set(command.name, command);
             slashCommands.push(command);
