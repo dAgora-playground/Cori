@@ -10,7 +10,7 @@ import glob from "glob";
 import { promisify } from "util";
 import { RegisterCommandsOptions } from "../typings/client";
 import { Event } from "./Event";
-import { logger } from "ethers";
+import { logger } from "../utils";
 
 const globPromise = promisify(glob);
 

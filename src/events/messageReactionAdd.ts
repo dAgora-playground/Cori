@@ -1,7 +1,6 @@
 import { Event } from "../structures/Event";
-import { handle, setLanguage } from "../utils";
+import { handle, logger, setLanguage } from "../utils";
 import i18next from "../material/i18n";
-import { logger } from "ethers";
 const { t } = i18next;
 
 export default new Event("messageReactionAdd", async (reaction, reactUser) => {

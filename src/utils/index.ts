@@ -42,7 +42,7 @@ export async function handle(
     contentMsg: Message<boolean>,
     confirmOrSuggestionMsg: Message<boolean>
 ) {
-    setLanguage(contentMsg.guildId, contentMsg.guild.name);
+    await setLanguage(contentMsg.guildId, contentMsg.guild.name);
     const stateMessage = await confirmOrSuggestionMsg.reply(t("collecting"));
     const {
         username: authorUsername,
